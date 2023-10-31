@@ -23,11 +23,11 @@ app.use(shopRoutes);
 app.use(errorController.get404);
 
 sequelize
-    .sync()
-    .then(a=>{
-        //console.log(a);
-        app.listen(3000);
-    })
-    .catch(err=> console.log(err));  //syncs the models to database by creating tables and relations 
-
-
+  .sync()
+  .then(result => {
+    // console.log(result);
+    app.listen(3000);
+  })
+  .catch(err => {
+    console.log(err);
+  });
