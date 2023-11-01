@@ -13,19 +13,28 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  Product.create({
-    title: title,
-    price: price,
-    imageUrl: imageUrl,
-    description: description
-  })
+
+  // Ensure req.user is defined before calling createProduct
+  if (!req.user) {
+    // Handle case where user is not defined
+    // You might want to redirect to an error page or return an error response
+    return res.status(500).send('Internal Server Error');
+  }
+  req.user
+    .createProduct({
+      title: title,
+      price: price,
+      imageUrl: imageUrl,
+      description: description
+    })
     .then(result => {
-      // console.log(result);
       console.log('Created Product');
-      res.redirect('/admin/products')
+      res.redirect('/admin/products');
     })
     .catch(err => {
-      console.log(err);
+      console.error(err);
+      // Handle product creation error
+      res.status(500).send('Internal Server Error');
     });
 };
 
@@ -35,7 +44,10 @@ exports.getEditProduct = (req, res, next) => {
     return res.redirect('/');
   }
   const prodId = req.params.productId;
-  Product.findByPk(prodId).then(product=>{
+  req.user.getProducts({where :{id:prodId}})
+  //Product.findByPk(prodId)
+  .then(products=>{
+    const product= products[0];
     if (!product) {
       return res.redirect('/');
     }
@@ -70,7 +82,9 @@ exports.postEditProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.findAll().then(products => {
+  req.user.getProducts()
+  //Product.findAll()
+  .then(products => {
       res.render('admin/products', {
       prods: products,
       pageTitle: 'Admin Products',
